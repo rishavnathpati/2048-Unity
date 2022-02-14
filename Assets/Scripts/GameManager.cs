@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
@@ -16,10 +17,36 @@ public class GameManager : MonoBehaviour
 
     private List<Block> _blockList;
     private List<Node> _nodeList;
+    private GameState _state;
+    private int round;
 
     private void Start()
     {
-        GenerateGrid();
+        ChangeState(GameState.GenerateLevel);
+    }
+
+    private void ChangeState(GameState newState)
+    {
+        _state = newState;
+        switch (newState)
+        {
+            case GameState.GenerateLevel:
+                GenerateGrid();
+                break;
+            case GameState.SpawningBlocks:
+                SpawnBlocks(round++ == 0 ? 2 : 1);
+                break;
+            case GameState.WaitingInput:
+                break;
+            case GameState.Moving:
+                break;
+            case GameState.Win:
+                break;
+            case GameState.Lose:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
+        }
     }
 
     private BlockType GetBlockTypeByValue(int value)
@@ -29,10 +56,13 @@ public class GameManager : MonoBehaviour
 
     private void GenerateGrid()
     {
+        round = 0;
+        _nodeList = new List<Node>();
         for (var x = 0; x < width; x++)
         for (var y = 0; y < height; y++)
         {
             var node = Instantiate(nodePrefab, new Vector2(x, y), quaternion.identity);
+            _nodeList.Add(node);
         }
 
         var center = new Vector2((float) width / 2 - .5f, (float) height / 2 - .5f);
@@ -42,21 +72,16 @@ public class GameManager : MonoBehaviour
 
         if (Camera.main != null) Camera.main.transform.position = new Vector3(center.x, center.y, -10);
         
-        SpawnBlocks(2);
+        ChangeState(GameState.SpawningBlocks);
     }
 
     private void SpawnBlocks(int amount)
     {
-        var freeNodes = _nodeList.Where(n => n.OccupiedBlock == null).OrderBy(b => Random.value).ToList();
+        var freeNodes = _nodeList.Where(n => n.occupiedBlock == null).OrderBy(b => Random.value).ToList();
         foreach (var node in freeNodes.Take(amount))
         {
             var block = Instantiate(blockPrefab, node.Pos, quaternion.identity);
-            block.Init(GetBlockTypeByValue(2));
-        }
-
-        for (var i = 0; i < amount; i++)
-        {
-            var block = Instantiate(blockPrefab);
+            block.Init(GetBlockTypeByValue(Random.value > 0.8 ? 4 : 2));
         }
 
         if (freeNodes.Count() == 1)
@@ -70,4 +95,14 @@ public class GameManager : MonoBehaviour
         public int value;
         public Color color;
     }
+}
+
+public enum GameState
+{
+    GenerateLevel,
+    SpawningBlocks,
+    WaitingInput,
+    Moving,
+    Win,
+    Lose
 }
