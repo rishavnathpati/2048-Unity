@@ -5,6 +5,9 @@ public class Block : MonoBehaviour
 {
     public int value;
     public Node node;
+    public Block mergingBlock;
+    public bool merging;
+
     [SerializeField] private GameObject visual;
     [SerializeField] private TextMeshPro valueText;
     private SpriteRenderer _spriteRenderer;
@@ -20,11 +23,25 @@ public class Block : MonoBehaviour
         valueText.text = type.value.ToString();
     }
 
-    public void SetBlock(Node node)
+    public void SetBlock(Node varNode)
     {
-        if (this.node != null) this.node.occupiedBlock = null;
-        this.node = node;
-        this.node.occupiedBlock = this;
+        if (node != null) node.occupiedBlock = null;
+        node = varNode;
+        node.occupiedBlock = this;
+    }
 
+    public void MergeBlock(Block blockToMergeWith)
+    {
+        mergingBlock = blockToMergeWith;
+
+        // Set current node as unoccupied to allow it to use it
+        node.occupiedBlock = null;
+
+        blockToMergeWith.merging = true;
+    }
+
+    public bool CanMerge(int varValue)
+    {
+        return varValue == value && !merging && mergingBlock == null;
     }
 }
