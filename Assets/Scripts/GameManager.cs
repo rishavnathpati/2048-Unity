@@ -4,12 +4,11 @@ using System.Linq;
 using DG.Tweening;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
-    private const int WinCondition = 2048;
+    private const int WIN_CONDITION = 2048;
     [SerializeField] private int width = 4;
     [SerializeField] private int height = 4;
     [SerializeField] private Node nodePrefab;
@@ -162,7 +161,7 @@ public class GameManager : MonoBehaviour
         }
 
 
-        ChangeState(_blockList.Any(b => b.value == WinCondition) ? GameState.Win : GameState.WaitingInput);
+        ChangeState(_blockList.Any(b => b.value == WIN_CONDITION) ? GameState.Win : GameState.WaitingInput);
     }
 
     private void SpawnBlock(Node node, int value)
